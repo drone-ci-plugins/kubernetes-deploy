@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1   
+kind: Deployment                
+metadata:
+  name: ${PLUGIN_NAME}-${PLUGIN_ENVIROMENT}              
+  namespace: ${PLUGIN_NAMESPACE}         
+  labels:
+    simcu-deploy-app: ${PLUGIN_NAMESPACE}-${PLUGIN_NAME}-${PLUGIN_ENVIROMENT}           
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      simcu-deploy-app: ${PLUGIN_NAMESPACE}-${PLUGIN_NAME}-${PLUGIN_ENVIROMENT} 
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:  
+      maxSurge: 1     
+      maxUnavailable: 1 
+  template:         
+    metadata:
+      labels:
+        simcu-deploy-app: ${PLUGIN_NAMESPACE}-${PLUGIN_NAME}-${PLUGIN_ENVIROMENT}  
+    spec: 
+      containers:                                                                   
+      - name: ${PLUGIN_NAME}-${PLUGIN_ENVIROMENT}                                                       
+        image: ${PLUGIN_IMAGE} 
+        imagePullPolicy: IfNotPresent  
+        resources:              
+          requests:
+            cpu: ${PLUGIN_CPU}
+            memory: ${PLUGIN_MEM}
+          limits:
+            cpu: ${PLUGIN_CPU}
+            memory: ${PLUGIN_MEM}
+        ports:
+        - name: tcp
+          containerPort: ${PLUGIN_PORT}
+      imagePullSecrets:
+      - name: ${REGISTRY_SECRET_NAME}

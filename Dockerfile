@@ -1,0 +1,16 @@
+FROM lachlanevenson/k8s-kubectl
+MAINTAINER xRain@SimcuTeam <xrain@simcu.com>
+
+ENV PLUGIN_ENVIROMENT production
+ENV PLUGIN_CPU 500m
+ENV PLUGIN_MEM 1024Mi
+ENV PLUGIN_RSVP true
+ENV PLUGIN_SERVICE_TYPE ClusterIP
+ENV PLUGIN_ACME false
+ENV REGISTRY_SECRET_NAME simcu
+ENV PLUGIN_PORT=1
+
+COPY . /home
+WORKDIR /home
+ENTRYPOINT []
+CMD sh deploy.sh
