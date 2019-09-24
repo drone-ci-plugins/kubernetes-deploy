@@ -23,6 +23,7 @@ PLUGIN_ACME        |false     | need cert-manager, will use https to serve url. 
 PLUGIN_K8S_URL     |-     | k8s api server url  
 PLUGIN_K8S_TOKEN   |-     | k8s service account 
 PLUGIN_K8S_CA      |-     | Base64 format cert file string
+PLUGIN_REGISTRY_SECRET              |simcu     | must create a secret for pull image
 DEBUG              |false     | if set to true, will show debug info   
 
 

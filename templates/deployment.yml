@@ -32,4 +32,4 @@ spec:
         - name: tcp
           containerPort: ${PLUGIN_PORT}
       imagePullSecrets:
-      - name: ${REGISTRY_SECRET_NAME}
+      - name: ${PLUGIN_REGISTRY_SECRET}
