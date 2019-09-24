@@ -84,11 +84,11 @@ echo '<============== deployment.yml ==============>'
 cat /home/auto/deployment.yml
 echo '<============== service.yml ==============>'
 if [ -f "auto/service.yml" ];then
-	/home/cat auto/service.yml
+	cat /home/auto/service.yml
 fi
 echo '<============== ingress.yml ==============>'
 if [ -f "auto/ingress.yml" ];then
-	/home/cat auto/ingress.yml
+	cat /home/auto/ingress.yml
 fi
 
 echo '*******************Start Deploy*******************'
