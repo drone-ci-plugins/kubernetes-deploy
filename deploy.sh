@@ -83,11 +83,11 @@ cat /home/auto/namespace.yml
 echo '<============== deployment.yml ==============>'
 cat /home/auto/deployment.yml
 echo '<============== service.yml ==============>'
-if [ -f "auto/service.yml" ];then
+if [ -f "/home/auto/service.yml" ];then
 	cat /home/auto/service.yml
 fi
 echo '<============== ingress.yml ==============>'
-if [ -f "auto/ingress.yml" ];then
+if [ -f "/home/auto/ingress.yml" ];then
 	cat /home/auto/ingress.yml
 fi
 
@@ -96,8 +96,8 @@ fi
 if [ -z "$PLUGIN_K8S_CA" ];then
 	kubectl --server=$PLUGIN_K8S_URL --token=$PLUGIN_K8S_TOKEN apply -f /home/auto
 else
-	echo $PLUGIN_K8S_CA | base64 -d > ca.crt
-	kubectl --server=$PLUGIN_K8S_URL --token=$PLUGIN_K8S_TOKEN --certificate-authority=ca.crt apply -f /home/auto
+	echo $PLUGIN_K8S_CA | base64 -d > /home/ca.crt
+	kubectl --server=$PLUGIN_K8S_URL --token=$PLUGIN_K8S_TOKEN --certificate-authority=/home/ca.crt apply -f /home/auto
 fi
 
 
