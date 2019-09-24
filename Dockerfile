@@ -11,6 +11,5 @@ ENV REGISTRY_SECRET_NAME simcu
 ENV PLUGIN_PORT=1
 
 COPY . /home
-WORKDIR /home
 ENTRYPOINT []
-CMD sh deploy.sh
+CMD sh /home/deploy.sh
