@@ -47,7 +47,7 @@ if [ -z "$PLUGIN_NAMESPACE" ];then
 	PLUGIN_NAMESPACE=$DRONE_REPO_NAMESPACE
 fi
 if [ -z "$PLUGIN_NAME" ];then
-	PLUGIN_NAME=${DRONE_REPO/$DRONE_REPO_NAMESPACE\//}
+	PLUGIN_NAME=${DRONE_REPO_NAME}
 fi
 if [ -z "$PLUGIN_NAMESPACE" ];then
 	echo "[ERROR] namespace isn't defined!"
