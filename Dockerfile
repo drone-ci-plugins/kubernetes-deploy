@@ -1,15 +1,18 @@
-FROM lachlanevenson/k8s-kubectl
-MAINTAINER xRain@SimcuTeam <xrain@simcu.com>
+FROM mcr.microsoft.com/dotnet/core/runtime:3.0-buster-slim AS base
+WORKDIR /app
 
-ENV PLUGIN_ENVIROMENT production
-ENV PLUGIN_CPU 500m
-ENV PLUGIN_MEM 1024Mi
-ENV PLUGIN_RSVP true
-ENV PLUGIN_SERVICE_TYPE ClusterIP
-ENV PLUGIN_ACME false
-ENV PLUGIN_REGISTRY_SECRET simcu
-ENV PLUGIN_PORT=1
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0-buster AS build
+WORKDIR /src
+COPY Emilia.csproj ./
+RUN dotnet restore "./Emilia.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "Emilia.csproj" -c Release -o /app/build
 
-COPY . /home
-ENTRYPOINT []
-CMD sh /home/deploy.sh
+FROM build AS publish
+RUN dotnet publish "Emilia.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Emilia.dll"]
