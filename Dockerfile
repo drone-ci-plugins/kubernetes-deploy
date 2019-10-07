@@ -15,4 +15,4 @@ RUN dotnet publish "Emilia.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Emilia.dll"]
+ENTRYPOINT ["dotnet", "/app/Emilia.dll"]

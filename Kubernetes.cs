@@ -37,7 +37,8 @@ namespace Emilia
 
         public void UpdateDeployment(string ns, string name, string env, string image, string cpu, string mem, bool rsvp, int port, string registrySecret)
         {
-            if (_kubeApiClient.DeploymentsV1Beta1().Get($"{name}-{env}", ns).Result == null)
+            var deploy = _kubeApiClient.DeploymentsV1Beta1().Get($"{name}-{env}", ns).Result;
+            if (deploy == null)
             {
                 Log($"Deployment: {name}-{env} not found, created");
 
