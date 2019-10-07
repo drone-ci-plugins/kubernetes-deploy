@@ -14,7 +14,7 @@
         "outputPath": "/Users/xrain/Develop/Emilia/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/xrain/.nuget/NuGet/NuGet.Config"
+          "/Users/xrain/.config/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.0"

@@ -19,13 +19,13 @@ namespace Emilia
         {
             if (_kubeApiClient.NamespacesV1().Get(name).Result == null)
             {
-                _kubeApiClient.NamespacesV1().Create(new NamespaceV1
+                var res = _kubeApiClient.NamespacesV1().Create(new NamespaceV1
                 {
                     Metadata = new ObjectMetaV1
                     {
                         Name = name
                     }
-                }).RunSynchronously();
+                }).Result;
                 Log($"Namespace: {name} not found, created");
             }
             else
@@ -71,7 +71,7 @@ namespace Emilia
                     });
                 }
 
-                _kubeApiClient.DeploymentsV1Beta1().Create(new DeploymentV1Beta1
+                var res = _kubeApiClient.DeploymentsV1Beta1().Create(new DeploymentV1Beta1
                 {
                     Metadata = new ObjectMetaV1
                     {
@@ -109,12 +109,12 @@ namespace Emilia
                             }
                         }
                     }
-                }).RunSynchronously();
+                }).Result;
             }
             else
             {
                 Log($"Deployment: {name}-{env} already exists, updated");
-                _kubeApiClient.DeploymentsV1Beta1().Update($"{name}-{env}", kubeNamespace: ns, patchAction: patch =>
+                var res = _kubeApiClient.DeploymentsV1Beta1().Update($"{name}-{env}", kubeNamespace: ns, patchAction: patch =>
                   {
                       patch.Replace(x => x.Spec.Template.Spec.Containers[0].Image, image);
                       patch.Replace(x => x.Spec.Template.Spec.ImagePullSecrets, new List<LocalObjectReferenceV1> { new LocalObjectReferenceV1 { Name = registrySecret } });
@@ -131,7 +131,7 @@ namespace Emilia
                               ContainerPort = port
                           });
                       }
-                  });
+                  }).Result;
             }
         }
 
