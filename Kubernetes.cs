@@ -17,13 +17,14 @@ namespace Emilia
 
         public void CheckAndCreateNamespace(string name)
         {
+            
             if (_kubeApiClient.NamespacesV1().Get(name).Result == null)
             {
                 var res = _kubeApiClient.NamespacesV1().Create(new NamespaceV1
                 {
                     Metadata = new ObjectMetaV1
                     {
-                        Name = name
+                        Name = name,
                     }
                 }).Result;
                 Log($"Namespace: {name} not found, created");
@@ -37,7 +38,7 @@ namespace Emilia
 
         public void UpdateDeployment(string ns, string name, string env, string image, string cpu, string mem, bool rsvp, int port, string registrySecret)
         {
-            var deploy = _kubeApiClient.DeploymentsV1Beta1().Get($"{name}-{env}", ns).Result;
+            var deploy = _kubeApiClient.DeploymentsV1().Get($"{name}-{env}", ns).Result;
             if (deploy == null)
             {
                 Log($"Deployment: {name}-{env} not found, created");
@@ -74,6 +75,7 @@ namespace Emilia
 
                 var res = _kubeApiClient.DeploymentsV1Beta1().Create(new DeploymentV1Beta1
                 {
+                    ApiVersion= "apps/v1beta1",
                     Metadata = new ObjectMetaV1
                     {
                         Name = $"{name}-{env}",
