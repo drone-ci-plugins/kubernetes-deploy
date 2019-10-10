@@ -21,7 +21,8 @@ PLUGIN_SERVICE_TYPE|ClusterIP     | service type, supported values: "ClusterIP",
 PLUGIN_URL         |-    | if set , will create ingress with the url, not include http/https e.g. test.simcu.com
 PLUGIN_ACME        |false     | need cert-manager, will use https to serve url. not support Wildcard Domain 
 PLUGIN_K8S_URL     |-     | k8s api server url  
-PLUGIN_K8S_TOKEN   |-     | k8s service account 
+PLUGIN_K8S_TOKEN   |-     | k8s service account
+PLUGIN_REGISTRY_SECRET              |simcu     | must create a secret for pull image
 
 
 ### Drone CI Usage:
@@ -45,6 +46,7 @@ steps:
       acme: true
       k8s_url: https://xx.xx.xx.xx:8443/
       k8s_token: abcdefghijklmn12345678
+      registry_secret: simcu
 ```
 
 If you want to use it as simple docker container, only set -e with the Enviroment. e.g.
