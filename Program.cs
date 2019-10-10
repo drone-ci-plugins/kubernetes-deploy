@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using KubeClient;
 
 namespace Emilia
@@ -16,15 +15,15 @@ namespace Emilia
                 Image = Environment.GetEnvironmentVariable("PLUGIN_IMAGE"),
                 Cpu = Environment.GetEnvironmentVariable("PLUGIN_CPU") ?? "500m",
                 Mem = Environment.GetEnvironmentVariable("PLUGIN_MEM") ?? "1024Mi",
-                Rsvp = Environment.GetEnvironmentVariable("PLUGIN_RSVP") == null ? true : Environment.GetEnvironmentVariable("PLUGIN_RSVP") == "true",
+                Rsvp = Environment.GetEnvironmentVariable("PLUGIN_RSVP") == "true",
                 Port = Environment.GetEnvironmentVariable("PLUGIN_PORT") == null ? 0 : int.Parse(Environment.GetEnvironmentVariable("PLUGIN_PORT")),
                 ServiceType = Environment.GetEnvironmentVariable("PLUGIN_SERVICE_TYPE") ?? "ClusterIP",
                 Url = Environment.GetEnvironmentVariable("PLUGIN_URL"),
                 Acme = Environment.GetEnvironmentVariable("PLUGIN_ACME") == "true",
                 K8SUrl = Environment.GetEnvironmentVariable("PLUGIN_K8S_URL"),
                 K8SToken = Environment.GetEnvironmentVariable("PLUGIN_K8S_TOKEN"),
-                K8SCA = Environment.GetEnvironmentVariable("PLUGIN_K8S_CA"),
-                RegistrySecret = Environment.GetEnvironmentVariable("PLUGIN_REGISTRY_SECRET") ?? "simcu"
+                RegistrySecret = Environment.GetEnvironmentVariable("PLUGIN_REGISTRY_SECRET") ?? "simcu",
+                Debug = Environment.GetEnvironmentVariable("PLUGIN_DEBUG") == "true"
             };
 
             if (config.Namespace == null)
@@ -61,29 +60,16 @@ namespace Emilia
             {
                 ApiEndPoint = new Uri(config.K8SUrl),
                 AccessToken = config.K8SToken,
-                AuthStrategy = KubeAuthStrategy.BearerToken
+                AuthStrategy = KubeAuthStrategy.BearerToken,
+                AllowInsecure = true
             };
-
-            if (config.K8SCA != null)
-            {
-                var ca = new X509Certificate2();
-                ca.Import(Convert.FromBase64String(config.K8SCA));
-                kubeOptions.CertificationAuthorityCertificate = ca;
-            }
 
             var kube = new Kubernetes(KubeApiClient.Create(kubeOptions));
 
             kube.CheckAndCreateNamespace(config.Namespace);
             kube.UpdateDeployment(config.Namespace, config.Name, config.Environment, config.Image, config.Cpu, config.Mem, config.Rsvp, config.Port, config.RegistrySecret);
-            if (config.Port > 0)
-            {
-                kube.UpdateService(config.Namespace, config.Name, config.Environment, config.ServiceType, config.Port);
-            }
-            if (config.Url != null)
-            {
-                kube.UpdateIngress(config.Namespace, config.Name, config.Environment, config.Url, config.Port, config.Acme);
-            }
-
+            kube.UpdateService(config.Namespace, config.Name, config.Environment, config.ServiceType, config.Port);
+            kube.UpdateIngress(config.Namespace, config.Name, config.Environment, config.Url, config.Port, config.Acme);
         }
 
         static void Log(string log, string type = "Error")

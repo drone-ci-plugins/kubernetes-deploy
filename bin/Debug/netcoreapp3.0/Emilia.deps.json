@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v3.0": {
       "Emilia/1.0.0": {
         "dependencies": {
-          "KubeClient": "2.3.2"
+          "KubeClient": "2.3.5"
         },
         "runtime": {
           "Emilia.dll": {}
@@ -75,7 +75,7 @@
           }
         }
       },
-      "KubeClient/2.3.2": {
+      "KubeClient/2.3.5": {
         "dependencies": {
           "HTTPlease.Core": "1.8.2",
           "HTTPlease.Diagnostics": "1.8.2",
@@ -90,8 +90,8 @@
         },
         "runtime": {
           "lib/netstandard1.4/KubeClient.dll": {
-            "assemblyVersion": "2.3.2.0",
-            "fileVersion": "2.3.2.0"
+            "assemblyVersion": "2.3.5.0",
+            "fileVersion": "2.3.5.0"
           }
         }
       },
@@ -1129,12 +1129,12 @@
       "path": "httplease.formatters.json/1.8.2",
       "hashPath": "httplease.formatters.json.1.8.2.nupkg.sha512"
     },
-    "KubeClient/2.3.2": {
+    "KubeClient/2.3.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3bOn6EzCD/PHAzzLcH4rFt18+mS81fszmpo+id1JKf1I1+Jf/3I6bl0y5gnv3pB8hfrPayJq9U08GtLietgusw==",
-      "path": "kubeclient/2.3.2",
-      "hashPath": "kubeclient.2.3.2.nupkg.sha512"
+      "sha512": "sha512-cP5V8PV9d4qJvAYXfMXcr5pb7FHX0pYcHlNKFn5j9F9z4ma4RntR1epJh297tkAE4e/B84WZU0k9iihGGMUo8A==",
+      "path": "kubeclient/2.3.5",
+      "hashPath": "kubeclient.2.3.5.nupkg.sha512"
     },
     "Microsoft.AspNetCore.JsonPatch/1.1.2": {
       "type": "package",

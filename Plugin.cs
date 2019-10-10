@@ -16,7 +16,7 @@ namespace Emilia
         public bool Acme { get; set; }
         public string K8SUrl { get; set; }
         public string K8SToken { get; set; }
-        public string K8SCA { get; set; }
         public string RegistrySecret { get; set; }
+        public bool Debug { get; set; } = false;
     }
 }
