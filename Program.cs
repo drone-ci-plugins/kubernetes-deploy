@@ -11,7 +11,7 @@ namespace Emilia
             {
                 Namespace = Environment.GetEnvironmentVariable("PLUGIN_NAMESPACE"),
                 Name = Environment.GetEnvironmentVariable("PLUGIN_NAME"),
-                Environment = Environment.GetEnvironmentVariable("PLUGIN_ENVIROMENT") ?? "production",
+                Environment = Environment.GetEnvironmentVariable("PLUGIN_ENVIRONMENT") ?? "production",
                 Image = Environment.GetEnvironmentVariable("PLUGIN_IMAGE"),
                 Cpu = Environment.GetEnvironmentVariable("PLUGIN_CPU") ?? "500m",
                 Mem = Environment.GetEnvironmentVariable("PLUGIN_MEM") ?? "1024Mi",

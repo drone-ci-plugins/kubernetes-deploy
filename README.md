@@ -11,7 +11,7 @@ Name    |DefaultValue     |     Description
  -------- | :-----------:  | :-----------: 
 PLUGIN_NAMESPACE   | DRONE_REPO_NAMESPACE | k8s namespace, if not exists, will create
 PLUGIN_NAME        | DRONE_REPO without DRONE_REPO_NAMESPACE | deployname attr  
-PLUGIN_ENVIROMENT  |-     | deployname attr  
+PLUGIN_ENVIRONMENT  |-     | deployname attr  
 PLUGIN_IMAGE       |-    | the deploy image  
 PLUGIN_CPU         |500m     | k8s limit cpu  
 PLUGIN_MEM         |1024Mi     | k8s limit memory 
@@ -35,7 +35,7 @@ steps:
     settings:
       namespace: deploytest
       name: test
-      enviroment: staging
+      environment: staging
       image: nginx:alpine
       cpu: 1000m
       mem: 1024Mi
