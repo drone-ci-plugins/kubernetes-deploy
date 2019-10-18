@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 namespace Emilia
 {
     public class Plugin
@@ -7,6 +7,10 @@ namespace Emilia
         public string Name { get; set; }
         public string Environment { get; set; }
         public string Image { get; set; }
+        public string EntryPoint { get; set; }
+        public string Command { get; set; }
+        public Dictionary<string,string> Lables { get; set; }
+        public Dictionary<string, string> Annotations { get; set; }
         public string Cpu { get; set; }
         public string Mem { get; set; }
         public bool Rsvp { get; set; }

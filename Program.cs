@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using KubeClient;
 
 namespace Emilia
@@ -23,7 +24,12 @@ namespace Emilia
                 K8SUrl = Environment.GetEnvironmentVariable("PLUGIN_K8S_URL"),
                 K8SToken = Environment.GetEnvironmentVariable("PLUGIN_K8S_TOKEN"),
                 RegistrySecret = Environment.GetEnvironmentVariable("PLUGIN_REGISTRY_SECRET") ?? "simcu",
-                Debug = Environment.GetEnvironmentVariable("PLUGIN_DEBUG") == "true"
+                Debug = Environment.GetEnvironmentVariable("PLUGIN_DEBUG") == "true",
+                //New:
+                EntryPoint = Environment.GetEnvironmentVariable("PLUGIN_ENTRY_POINT"),
+                Command = Environment.GetEnvironmentVariable("PLUGIN_COMMAND"),
+                Lables = new Dictionary<string, string>(),
+                Annotations = new Dictionary<string, string>()
             };
 
             if (config.Namespace == null)
@@ -56,6 +62,30 @@ namespace Emilia
                 Log("Image isn't defind");
             }
 
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PLUGIN_LABLES")))
+            {
+                foreach (var item in Environment.GetEnvironmentVariable("PLUGIN_LABLES").Split('|'))
+                {
+                    var itemArr = item.Split('=', 2);
+                    if (itemArr.Length == 2)
+                    {
+                        config.Lables.Add(itemArr[0], itemArr[1]);
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PLUGIN_ANNOTATIONS")))
+            {
+                foreach (var item in Environment.GetEnvironmentVariable("PLUGIN_ANNOTATIONS").Split('|'))
+                {
+                    var itemArr = item.Split('=', 2);
+                    if (itemArr.Length == 2)
+                    {
+                        config.Annotations.Add(itemArr[0], itemArr[1]);
+                    }
+                }
+            }
+
+
             var kubeOptions = new KubeClientOptions
             {
                 ApiEndPoint = new Uri(config.K8SUrl),
@@ -67,7 +97,7 @@ namespace Emilia
             var kube = new Kubernetes(KubeApiClient.Create(kubeOptions));
 
             kube.CheckAndCreateNamespace(config.Namespace);
-            kube.UpdateDeployment(config.Namespace, config.Name, config.Environment, config.Image, config.Cpu, config.Mem, config.Rsvp, config.Port, config.RegistrySecret);
+            kube.UpdateDeployment(config.Namespace, config.Name, config.Environment, config.Image, config.Cpu, config.Mem, config.Rsvp, config.Port, config.RegistrySecret, config);
             kube.UpdateService(config.Namespace, config.Name, config.Environment, config.ServiceType, config.Port);
             kube.UpdateIngress(config.Namespace, config.Name, config.Environment, config.Url, config.Port, config.Acme);
         }

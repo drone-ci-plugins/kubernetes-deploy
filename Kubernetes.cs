@@ -36,7 +36,7 @@ namespace Emilia
 
         }
 
-        public void UpdateDeployment(string ns, string name, string env, string image, string cpu, string mem, bool rsvp, int port, string registrySecret)
+        public void UpdateDeployment(string ns, string name, string env, string image, string cpu, string mem, bool rsvp, int port, string registrySecret, Plugin config)
         {
             var deploy = _kubeApiClient.DeploymentsV1().Get($"{name}-{env}", ns).Result;
             if (deploy == null)
@@ -57,6 +57,15 @@ namespace Emilia
                         }
                     }
                 };
+
+                if (!string.IsNullOrEmpty(config.EntryPoint))
+                {
+                    templateContainer.Command.Add(config.EntryPoint);
+                }
+                if (!string.IsNullOrEmpty(config.Command))
+                {
+                    templateContainer.Args.Add(config.Command);
+                }
 
                 if (rsvp)
                 {
@@ -124,6 +133,46 @@ namespace Emilia
                       patch.Replace(x => x.Spec.Template.Spec.ImagePullSecrets, new List<LocalObjectReferenceV1> { new LocalObjectReferenceV1 { Name = registrySecret } });
                       patch.Replace(x => x.Spec.Template.Spec.Containers[0].Resources.Limits, new Dictionary<string, string> { { "cpu", cpu }, { "memory", mem } });
 
+                      patch.Replace(x => x.Metadata.Annotations, config.Annotations);
+                      config.Lables.Add("simcu-deploy-app", $"{ns}-{name}-{env}");
+                      patch.Replace(x => x.Metadata.Labels, config.Lables);
+
+                      if (!string.IsNullOrEmpty(config.EntryPoint))
+                      {
+                          if (deploy.Spec.Template.Spec.Containers[0].Command.Count > 0)
+                          {
+                              patch.Replace(x => x.Spec.Template.Spec.Containers[0].Command, new List<string> { config.EntryPoint });
+                          }
+                          else
+                          {
+                              patch.Add(x => x.Spec.Template.Spec.Containers[0].Command, new List<string> { config.EntryPoint });
+                          }
+                      }
+                      else
+                      {
+                          if (deploy.Spec.Template.Spec.Containers[0].Command.Count > 0)
+                          {
+                              patch.Remove(x => x.Spec.Template.Spec.Containers[0].Command);
+                          }
+                      }
+                      if (!string.IsNullOrEmpty(config.Command))
+                      {
+                          if (deploy.Spec.Template.Spec.Containers[0].Args.Count > 0)
+                          {
+                              patch.Replace(x => x.Spec.Template.Spec.Containers[0].Args, new List<string> { config.Command });
+                          }
+                          else
+                          {
+                              patch.Add(x => x.Spec.Template.Spec.Containers[0].Args, new List<string> { config.Command });
+                          }
+                      }
+                      else
+                      {
+                          if (deploy.Spec.Template.Spec.Containers[0].Args.Count > 0)
+                          {
+                              patch.Remove(x => x.Spec.Template.Spec.Containers[0].Args);
+                          }
+                      }
 
                       if (rsvp)
                       {
