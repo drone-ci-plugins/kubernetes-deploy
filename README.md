@@ -13,9 +13,9 @@ PLUGIN_NAMESPACE   | DRONE_REPO_NAMESPACE | k8s namespace, if not exists, will c
 PLUGIN_NAME        | DRONE_REPO without DRONE_REPO_NAMESPACE | deployname attr  
 PLUGIN_ENVIRONMENT  |-     | deployname attr  
 PLUGIN_IMAGE       |-    | the deploy image  
-PLUGIN_CPU         |500m     | k8s limit cpu  
-PLUGIN_MEM         |1024Mi     | k8s limit memory 
-PLUGIN_RSVP        |true     | if set true,will add resource request to deployment with limit cpu/memory  
+PLUGIN_CPU         |unlimited     | k8s limit cpu  
+PLUGIN_MEM         |unlimited     | k8s limit memory 
+PLUGIN_RSVP        |false     | if set true,will add resource request to deployment with limit cpu/memory  
 PLUGIN_PORT        |0    | deployment port , if set to <=0, will not create service  
 PLUGIN_SERVICE_TYPE|ClusterIP     | service type, supported values: "ClusterIP", "ExternalName", "LoadBalancer", "NodePort"
 PLUGIN_URL         |-    | if set , will create ingress with the url, not include http/https e.g. test.simcu.com

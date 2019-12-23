@@ -14,13 +14,15 @@ namespace Emilia
                 Name = Environment.GetEnvironmentVariable("PLUGIN_NAME"),
                 Environment = Environment.GetEnvironmentVariable("PLUGIN_ENVIRONMENT") ?? "production",
                 Image = Environment.GetEnvironmentVariable("PLUGIN_IMAGE"),
-                Cpu = Environment.GetEnvironmentVariable("PLUGIN_CPU") ?? "500m",
-                Mem = Environment.GetEnvironmentVariable("PLUGIN_MEM") ?? "1024Mi",
-                Rsvp = Environment.GetEnvironmentVariable("PLUGIN_RSVP") == "true",
-                Port = Environment.GetEnvironmentVariable("PLUGIN_PORT") == null ? 0 : int.Parse(Environment.GetEnvironmentVariable("PLUGIN_PORT")),
+                Cpu = Environment.GetEnvironmentVariable("PLUGIN_CPU"),
+                Mem = Environment.GetEnvironmentVariable("PLUGIN_MEM"),
+                Rsvp = Environment.GetEnvironmentVariable("PLUGIN_RSVP") == "false",
+                Port = Environment.GetEnvironmentVariable("PLUGIN_PORT") == null
+                    ? 0
+                    : int.Parse(Environment.GetEnvironmentVariable("PLUGIN_PORT")),
                 ServiceType = Environment.GetEnvironmentVariable("PLUGIN_SERVICE_TYPE") ?? "ClusterIP",
                 Url = Environment.GetEnvironmentVariable("PLUGIN_URL"),
-                Acme = Environment.GetEnvironmentVariable("PLUGIN_ACME") == "true",
+                Acme = Environment.GetEnvironmentVariable("PLUGIN_ACME") == "false",
                 K8SUrl = Environment.GetEnvironmentVariable("PLUGIN_K8S_URL"),
                 K8SToken = Environment.GetEnvironmentVariable("PLUGIN_K8S_TOKEN"),
                 RegistrySecret = Environment.GetEnvironmentVariable("PLUGIN_REGISTRY_SECRET") ?? "simcu",
@@ -28,7 +30,7 @@ namespace Emilia
                 //New:
                 EntryPoint = Environment.GetEnvironmentVariable("PLUGIN_ENTRY_POINT"),
                 Command = Environment.GetEnvironmentVariable("PLUGIN_COMMAND"),
-                Lables = new Dictionary<string, string>(),
+                Labels = new Dictionary<string, string>(),
                 Annotations = new Dictionary<string, string>()
             };
 
@@ -59,7 +61,7 @@ namespace Emilia
 
             if (config.Image == null)
             {
-                Log("Image isn't defind");
+                Log("Image isn't defined");
             }
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PLUGIN_LABLES")))
@@ -69,10 +71,11 @@ namespace Emilia
                     var itemArr = item.Split('=', 2);
                     if (itemArr.Length == 2)
                     {
-                        config.Lables.Add(itemArr[0], itemArr[1]);
+                        config.Labels.Add(itemArr[0], itemArr[1]);
                     }
                 }
             }
+
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PLUGIN_ANNOTATIONS")))
             {
                 foreach (var item in Environment.GetEnvironmentVariable("PLUGIN_ANNOTATIONS").Split('|'))
@@ -97,7 +100,8 @@ namespace Emilia
             var kube = new Kubernetes(KubeApiClient.Create(kubeOptions));
 
             kube.CheckAndCreateNamespace(config.Namespace);
-            kube.UpdateDeployment(config.Namespace, config.Name, config.Environment, config.Image, config.Cpu, config.Mem, config.Rsvp, config.Port, config.RegistrySecret, config);
+            kube.UpdateDeployment(config.Namespace, config.Name, config.Environment, config.Image, config.Cpu,
+                config.Mem, config.Rsvp, config.Port, config.RegistrySecret, config);
             kube.UpdateService(config.Namespace, config.Name, config.Environment, config.ServiceType, config.Port);
             kube.UpdateIngress(config.Namespace, config.Name, config.Environment, config.Url, config.Port, config.Acme);
         }

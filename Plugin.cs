@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
+
 namespace Emilia
 {
     public class Plugin
     {
         public string Namespace { get; set; }
+
         public string Name { get; set; }
         public string Environment { get; set; }
         public string Image { get; set; }
         public string EntryPoint { get; set; }
         public string Command { get; set; }
-        public Dictionary<string,string> Lables { get; set; }
+        public Dictionary<string, string> Labels { get; set; }
         public Dictionary<string, string> Annotations { get; set; }
         public string Cpu { get; set; }
         public string Mem { get; set; }

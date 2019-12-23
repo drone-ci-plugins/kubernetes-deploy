@@ -17,7 +17,6 @@ namespace Emilia
 
         public void CheckAndCreateNamespace(string name)
         {
-
             if (_kubeApiClient.NamespacesV1().Get(name).Result == null)
             {
                 var res = _kubeApiClient.NamespacesV1().Create(new NamespaceV1
@@ -33,10 +32,10 @@ namespace Emilia
             {
                 Log($"Namespace: {name} already exists");
             }
-
         }
 
-        public void UpdateDeployment(string ns, string name, string env, string image, string cpu, string mem, bool rsvp, int port, string registrySecret, Plugin config)
+        public void UpdateDeployment(string ns, string name, string env, string image, string cpu, string mem,
+            bool rsvp, int port, string registrySecret, Plugin config)
         {
             var deploy = _kubeApiClient.DeploymentsV1().Get($"{name}-{env}", ns).Result;
             if (deploy == null)
@@ -48,20 +47,35 @@ namespace Emilia
                 {
                     Name = $"{name}-{env}",
                     Image = image,
-                    Resources = new ResourceRequirementsV1
+                };
+
+                if (!string.IsNullOrEmpty(cpu))
+                {
+                    templateContainer.Resources = new ResourceRequirementsV1
                     {
                         Limits =
                         {
-                            ["cpu"] = cpu,
+                            ["cpu"] = cpu
+                        }
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(mem))
+                {
+                    templateContainer.Resources = new ResourceRequirementsV1
+                    {
+                        Limits =
+                        {
                             ["memory"] = mem
                         }
-                    }
-                };
+                    };
+                }
 
                 if (!string.IsNullOrEmpty(config.EntryPoint))
                 {
                     templateContainer.Command.Add(config.EntryPoint);
                 }
+
                 if (!string.IsNullOrEmpty(config.Command))
                 {
                     templateContainer.Args.Add(config.Command);
@@ -69,8 +83,15 @@ namespace Emilia
 
                 if (rsvp)
                 {
-                    templateContainer.Resources.Requests.Add("cpu", cpu);
-                    templateContainer.Resources.Requests.Add("memory", mem);
+                    if (!string.IsNullOrEmpty(cpu))
+                    {
+                        templateContainer.Resources.Requests.Add("cpu", cpu);
+                    }
+
+                    if (!string.IsNullOrEmpty(mem))
+                    {
+                        templateContainer.Resources.Requests.Add("memory", mem);
+                    }
                 }
 
                 if (port > 0)
@@ -91,7 +112,7 @@ namespace Emilia
                         Namespace = ns,
                         Labels =
                         {
-                            ["simcu-deploy-app"]=$"{ns}-{name}-{env}"
+                            ["simcu-deploy-app"] = $"{ns}-{name}-{env}"
                         }
                     },
                     Spec = new DeploymentSpecV1Beta1
@@ -101,7 +122,7 @@ namespace Emilia
                         {
                             MatchLabels =
                             {
-                                ["simcu-deploy-app"]= $"{ns}-{name}-{env}"
+                                ["simcu-deploy-app"] = $"{ns}-{name}-{env}"
                             }
                         },
 
@@ -116,8 +137,8 @@ namespace Emilia
                             },
                             Spec = new PodSpecV1
                             {
-                                Containers = { templateContainer },
-                                ImagePullSecrets = { new LocalObjectReferenceV1 { Name = registrySecret } }
+                                Containers = {templateContainer},
+                                ImagePullSecrets = {new LocalObjectReferenceV1 {Name = registrySecret}}
                             }
                         }
                     }
@@ -126,84 +147,93 @@ namespace Emilia
             else
             {
                 Log($"Deployment: {name}-{env} already exists, updated");
-                var res = _kubeApiClient.DeploymentsV1().Update($"{name}-{env}", kubeNamespace: ns, patchAction: patch =>
-                  {
+                var res = _kubeApiClient.DeploymentsV1().Update($"{name}-{env}", kubeNamespace: ns,
+                    patchAction: patch =>
+                    {
+                        patch.Replace(x => x.Spec.Template.Spec.Containers[0].Image, image);
+                        patch.Replace(x => x.Spec.Template.Spec.ImagePullSecrets,
+                            new List<LocalObjectReferenceV1> {new LocalObjectReferenceV1 {Name = registrySecret}});
+                        patch.Replace(x => x.Spec.Template.Spec.Containers[0].Resources.Limits,
+                            new Dictionary<string, string> {{"cpu", cpu}, {"memory", mem}});
 
-                      patch.Replace(x => x.Spec.Template.Spec.Containers[0].Image, image);
-                      patch.Replace(x => x.Spec.Template.Spec.ImagePullSecrets, new List<LocalObjectReferenceV1> { new LocalObjectReferenceV1 { Name = registrySecret } });
-                      patch.Replace(x => x.Spec.Template.Spec.Containers[0].Resources.Limits, new Dictionary<string, string> { { "cpu", cpu }, { "memory", mem } });
+                        patch.Replace(x => x.Metadata.Annotations, config.Annotations);
+                        config.Labels.Add("simcu-deploy-app", $"{ns}-{name}-{env}");
+                        patch.Replace(x => x.Metadata.Labels, config.Labels);
 
-                      patch.Replace(x => x.Metadata.Annotations, config.Annotations);
-                      config.Lables.Add("simcu-deploy-app", $"{ns}-{name}-{env}");
-                      patch.Replace(x => x.Metadata.Labels, config.Lables);
+                        if (!string.IsNullOrEmpty(config.EntryPoint))
+                        {
+                            if (deploy.Spec.Template.Spec.Containers[0].Command.Count > 0)
+                            {
+                                patch.Replace(x => x.Spec.Template.Spec.Containers[0].Command,
+                                    new List<string> {config.EntryPoint});
+                            }
+                            else
+                            {
+                                patch.Add(x => x.Spec.Template.Spec.Containers[0].Command,
+                                    new List<string> {config.EntryPoint});
+                            }
+                        }
+                        else
+                        {
+                            if (deploy.Spec.Template.Spec.Containers[0].Command.Count > 0)
+                            {
+                                patch.Remove(x => x.Spec.Template.Spec.Containers[0].Command);
+                            }
+                        }
 
-                      if (!string.IsNullOrEmpty(config.EntryPoint))
-                      {
-                          if (deploy.Spec.Template.Spec.Containers[0].Command.Count > 0)
-                          {
-                              patch.Replace(x => x.Spec.Template.Spec.Containers[0].Command, new List<string> { config.EntryPoint });
-                          }
-                          else
-                          {
-                              patch.Add(x => x.Spec.Template.Spec.Containers[0].Command, new List<string> { config.EntryPoint });
-                          }
-                      }
-                      else
-                      {
-                          if (deploy.Spec.Template.Spec.Containers[0].Command.Count > 0)
-                          {
-                              patch.Remove(x => x.Spec.Template.Spec.Containers[0].Command);
-                          }
-                      }
-                      if (!string.IsNullOrEmpty(config.Command))
-                      {
-                          if (deploy.Spec.Template.Spec.Containers[0].Args.Count > 0)
-                          {
-                              patch.Replace(x => x.Spec.Template.Spec.Containers[0].Args, new List<string> { config.Command });
-                          }
-                          else
-                          {
-                              patch.Add(x => x.Spec.Template.Spec.Containers[0].Args, new List<string> { config.Command });
-                          }
-                      }
-                      else
-                      {
-                          if (deploy.Spec.Template.Spec.Containers[0].Args.Count > 0)
-                          {
-                              patch.Remove(x => x.Spec.Template.Spec.Containers[0].Args);
-                          }
-                      }
+                        if (!string.IsNullOrEmpty(config.Command))
+                        {
+                            if (deploy.Spec.Template.Spec.Containers[0].Args.Count > 0)
+                            {
+                                patch.Replace(x => x.Spec.Template.Spec.Containers[0].Args,
+                                    new List<string> {config.Command});
+                            }
+                            else
+                            {
+                                patch.Add(x => x.Spec.Template.Spec.Containers[0].Args,
+                                    new List<string> {config.Command});
+                            }
+                        }
+                        else
+                        {
+                            if (deploy.Spec.Template.Spec.Containers[0].Args.Count > 0)
+                            {
+                                patch.Remove(x => x.Spec.Template.Spec.Containers[0].Args);
+                            }
+                        }
 
-                      if (rsvp)
-                      {
-                          patch.Replace(x => x.Spec.Template.Spec.Containers[0].Resources.Requests, new Dictionary<string, string> { { "cpu", cpu }, { "memory", mem } });
-                      }
-                      else
-                      {
-                          if (deploy.Spec.Template.Spec.Containers[0].Resources.Requests.Count > 0)
-                          {
-                              patch.Remove(x => x.Spec.Template.Spec.Containers[0].Resources.Requests);
-                          }
-                      }
-                      if (port != 0)
-                      {
-                          patch.Add(x => x.Spec.Template.Spec.Containers[0].Ports, new List<ContainerPortV1>
-                          {
-                              new ContainerPortV1
-                              {
-                                  Name = $"tcp-{port}",
-                                  ContainerPort = port
-                              }
-                          });
-                      }
-                      else
-                      {
-                          if (deploy.Spec.Template.Spec.Containers[0].Ports.Count > 0)
-                          {
-                              patch.Remove(x => x.Spec.Template.Spec.Containers[0].Ports, 0);
-                          }
-                      }
-                  }).Result;
+                        if (rsvp)
+                        {
+                            patch.Replace(x => x.Spec.Template.Spec.Containers[0].Resources.Requests,
+                                new Dictionary<string, string> {{"cpu", cpu}, {"memory", mem}});
+                        }
+                        else
+                        {
+                            if (deploy.Spec.Template.Spec.Containers[0].Resources.Requests.Count > 0)
+                            {
+                                patch.Remove(x => x.Spec.Template.Spec.Containers[0].Resources.Requests);
+                            }
+                        }
+
+                        if (port != 0)
+                        {
+                            patch.Add(x => x.Spec.Template.Spec.Containers[0].Ports, new List<ContainerPortV1>
+                            {
+                                new ContainerPortV1
+                                {
+                                    Name = $"tcp-{port}",
+                                    ContainerPort = port
+                                }
+                            });
+                        }
+                        else
+                        {
+                            if (deploy.Spec.Template.Spec.Containers[0].Ports.Count > 0)
+                            {
+                                patch.Remove(x => x.Spec.Template.Spec.Containers[0].Ports, 0);
+                            }
+                        }
+                    }).Result;
             }
         }
 
@@ -226,17 +256,17 @@ namespace Emilia
                         {
                             Type = type,
                             Selector =
-                        {
-                            ["simcu-deploy-app"] = $"{ns}-{name}-{env}"
-                        },
-                            Ports =
-                        {
-                            new ServicePortV1
                             {
-                                Port = port,
-                                Name = $"tcp-{port}"
+                                ["simcu-deploy-app"] = $"{ns}-{name}-{env}"
+                            },
+                            Ports =
+                            {
+                                new ServicePortV1
+                                {
+                                    Port = port,
+                                    Name = $"tcp-{port}"
+                                }
                             }
-                        }
                         }
                     }).Result;
                 }
@@ -246,7 +276,8 @@ namespace Emilia
                     var res = _kubeApiClient.ServicesV1().Update($"{name}-{env}", patch =>
                     {
                         patch.Replace(x => x.Spec.Type, type);
-                        patch.Replace(x => x.Spec.Ports, new ServicePortV1 { Name = $"tcp-{port}", Port = port, TargetPort = port }, 0);
+                        patch.Replace(x => x.Spec.Ports,
+                            new ServicePortV1 {Name = $"tcp-{port}", Port = port, TargetPort = port}, 0);
                     }, ns).Result;
                 }
             }
@@ -274,7 +305,8 @@ namespace Emilia
                                 {
                                     new HTTPIngressPathV1Beta1
                                     {
-                                        Backend = new IngressBackendV1Beta1{
+                                        Backend = new IngressBackendV1Beta1
+                                        {
                                             ServiceName = $"{name}-{env}",
                                             ServicePort = port
                                         },
@@ -289,19 +321,20 @@ namespace Emilia
                     spec.Tls.Add(
                         new IngressTLSV1Beta1
                         {
-                            Hosts = { url },
+                            Hosts = {url},
                             SecretName = $"acme-{name}-{env}"
                         }
                     );
                 }
+
                 var meta = new ObjectMetaV1
                 {
                     Name = $"{name}-{env}",
                     Namespace = ns,
                     Annotations =
-                        {
-                            ["kubernetes.io/tls-acme"] = acme.ToString()
-                        }
+                    {
+                        ["kubernetes.io/tls-acme"] = acme.ToString()
+                    }
                 };
                 var ingress = _kubeApiClient.IngressesV1Beta1().Get($"{name}-{env}", ns).Result;
                 if (ingress == null)
