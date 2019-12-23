@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using KubeClient;
 
 namespace Emilia
@@ -44,9 +46,43 @@ namespace Emilia
                 config.Name = Environment.GetEnvironmentVariable("DRONE_REPO_NAME");
             }
 
-            if (config.K8SToken == null || config.K8SUrl == null)
+            var kubeOptions = new KubeClientOptions();
+            if (config.K8SUrl == null)
             {
-                Log("K8S Cluster isn't defined");
+                if (Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_HOST") != null &&
+                    Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_PORT") != null)
+                {
+                    var k8s =
+                        $"https://{Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_HOST")}:{Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_PORT")}/";
+                    kubeOptions = new KubeClientOptions
+                    {
+                        ApiEndPoint = new Uri(k8s),
+                        AuthStrategy = KubeAuthStrategy.BearerToken,
+                        AccessToken = File.ReadAllText("/var/run/secrets/kubernetes.io/serviceaccount/token"),
+                        CertificationAuthorityCertificate =
+                            new X509Certificate2(
+                                File.ReadAllText("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+                            )
+                    };
+                }
+                else
+                {
+                    Log("K8S Cluster Url isn't defined");
+                }
+            }
+            else if (config.K8SToken == null)
+            {
+                Log("K8S Cluster Token isn't defined");
+            }
+            else
+            {
+                kubeOptions = new KubeClientOptions
+                {
+                    ApiEndPoint = new Uri(config.K8SUrl),
+                    AccessToken = config.K8SToken,
+                    AuthStrategy = KubeAuthStrategy.BearerToken,
+                    AllowInsecure = true
+                };
             }
 
             if (config.Namespace == null)
@@ -88,14 +124,6 @@ namespace Emilia
                 }
             }
 
-
-            var kubeOptions = new KubeClientOptions
-            {
-                ApiEndPoint = new Uri(config.K8SUrl),
-                AccessToken = config.K8SToken,
-                AuthStrategy = KubeAuthStrategy.BearerToken,
-                AllowInsecure = true
-            };
 
             var kube = new Kubernetes(KubeApiClient.Create(kubeOptions));
 
