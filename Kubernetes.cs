@@ -2,7 +2,6 @@
 using KubeClient;
 using KubeClient.Models;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Emilia
 {
@@ -103,7 +102,7 @@ namespace Emilia
                     });
                 }
 
-                var res = _kubeApiClient.DeploymentsV1Beta1().Create(new DeploymentV1Beta1
+                var res = _kubeApiClient.DeploymentsV1().Create(new DeploymentV1()
                 {
                     ApiVersion = "apps/v1beta1",
                     Metadata = new ObjectMetaV1
@@ -115,7 +114,7 @@ namespace Emilia
                             ["simcu-deploy-app"] = $"{ns}-{name}-{env}"
                         }
                     },
-                    Spec = new DeploymentSpecV1Beta1
+                    Spec = new DeploymentSpecV1()
                     {
                         Replicas = 1,
                         Selector = new LabelSelectorV1
