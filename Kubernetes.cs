@@ -104,7 +104,7 @@ namespace Emilia
 
                 var res = _kubeApiClient.DeploymentsV1().Create(new DeploymentV1()
                 {
-                    ApiVersion = "apps/v1beta1",
+                    ApiVersion = "apps/v1",
                     Metadata = new ObjectMetaV1
                     {
                         Name = $"{name}-{env}",
@@ -291,7 +291,7 @@ namespace Emilia
         {
             if (port > 0 && !string.IsNullOrEmpty(url))
             {
-                var spec = new IngressSpecV1Beta1
+                var spec = new IngressSpecV1Beta1()
                 {
                     Rules =
                     {
