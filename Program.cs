@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using KubeClient;
 
 namespace Emilia
@@ -45,6 +47,22 @@ namespace Emilia
             {
                 config.Name = Environment.GetEnvironmentVariable("DRONE_REPO_NAME");
             }
+
+            Log("Application Config:", "CONF");
+            foreach (var prop in config.GetType().GetProperties())
+            {
+                if (new[] {"K8SUrl", "K8SToken"}.Contains(prop.Name)) continue;
+                if (new[] {"Labels", "Annotations"}.Contains(prop.Name))
+                {
+                    Log($"{prop.Name} => {JsonSerializer.Serialize(prop.GetValue(config))}", "CONF");
+                }
+                else
+                {
+                    Log($"{prop.Name} => {prop.GetValue(config)}", "CONF");
+                }
+            }
+
+            Log("Start Deploy ....", "INFO");
 
             var kubeOptions = new KubeClientOptions();
             if (config.K8SUrl == null)
@@ -134,10 +152,10 @@ namespace Emilia
             kube.UpdateIngress(config.Namespace, config.Name, config.Environment, config.Url, config.Port, config.Acme);
         }
 
-        static void Log(string log, string type = "Error")
+        static void Log(string log, string type = "ERROR")
         {
             Console.WriteLine($"[{DateTime.Now.ToString()}]{type}: {log}");
-            if (type == "Error")
+            if (type == "ERROR")
             {
                 Environment.Exit(128);
             }

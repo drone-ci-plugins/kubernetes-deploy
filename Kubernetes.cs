@@ -363,7 +363,7 @@ namespace Emilia
             }
         }
 
-        static void Log(string log, string type = "Info")
+        static void Log(string log, string type = "INFO")
         {
             Console.WriteLine($"[{DateTime.Now.ToString()}]{type}: {log}");
         }
