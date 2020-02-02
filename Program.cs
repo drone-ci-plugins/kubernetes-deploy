@@ -20,13 +20,13 @@ namespace Emilia
                 Image = Environment.GetEnvironmentVariable("PLUGIN_IMAGE"),
                 Cpu = Environment.GetEnvironmentVariable("PLUGIN_CPU"),
                 Mem = Environment.GetEnvironmentVariable("PLUGIN_MEM"),
-                Rsvp = Environment.GetEnvironmentVariable("PLUGIN_RSVP") == "false",
+                Rsvp = Environment.GetEnvironmentVariable("PLUGIN_RSVP") == "true",
                 Port = Environment.GetEnvironmentVariable("PLUGIN_PORT") == null
                     ? 0
                     : int.Parse(Environment.GetEnvironmentVariable("PLUGIN_PORT")),
                 ServiceType = Environment.GetEnvironmentVariable("PLUGIN_SERVICE_TYPE") ?? "ClusterIP",
                 Url = Environment.GetEnvironmentVariable("PLUGIN_URL"),
-                Acme = Environment.GetEnvironmentVariable("PLUGIN_ACME") == "false",
+                Acme = Environment.GetEnvironmentVariable("PLUGIN_ACME") == "true",
                 K8SUrl = Environment.GetEnvironmentVariable("PLUGIN_K8S_URL"),
                 K8SToken = Environment.GetEnvironmentVariable("PLUGIN_K8S_TOKEN"),
                 RegistrySecret = Environment.GetEnvironmentVariable("PLUGIN_REGISTRY_SECRET") ?? "simcu",
